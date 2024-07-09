@@ -1,35 +1,41 @@
-<?php 
-    include 'layouts/sidebar.php';
-    include 'layouts/topbar.php';
-    include "koneksi.php";
+<?php
+include 'layouts/sidebar.php';
+include 'layouts/topbar.php';
+include "koneksi.php";
 
-    if (isset($_POST['update'])) {
-        $id = mysqli_real_escape_string($koneksi, $_POST['id']);
-        $nomorsurat = mysqli_real_escape_string($koneksi, $_POST['nomorsurat']);
-        $kategori = mysqli_real_escape_string($koneksi, $_POST['kategori']);
-        $judul = mysqli_real_escape_string($koneksi, $_POST['judul']);
-        $waktu = mysqli_real_escape_string($koneksi, $_POST['waktu']);
+// Mengambil data kategori dari database
+$sql = "SELECT namaKategori FROM kategori";
+$result = $koneksi->query($sql);
 
-        $file = $_FILES['file']['name'];
-        $file_temp = $_FILES['file']['tmp_name'];
+// Proses update data
+if (isset($_POST['update'])) {
+    $id = mysqli_real_escape_string($koneksi, $_POST['id']);
+    $nomorsurat = mysqli_real_escape_string($koneksi, $_POST['nomorsurat']);
+    $kategori = mysqli_real_escape_string($koneksi, $_POST['kategori']);
+    $judul = mysqli_real_escape_string($koneksi, $_POST['judul']);
+    $waktu = mysqli_real_escape_string($koneksi, $_POST['waktu']);
 
-        if (!empty($file_temp)) {
-            move_uploaded_file($file_temp, "file/file_$id.pdf");
-            $query = "UPDATE surat SET nomorsurat='$nomorsurat', kategori='$kategori', judul='$judul', waktu='$waktu', file='$file' WHERE id='$id'";
-        } else {
-            $query = "UPDATE surat SET nomorsurat='$nomorsurat', kategori='$kategori', judul='$judul', waktu='$waktu' WHERE id='$id'";
-        }
+    $file = $_FILES['file']['name'];
+    $file_temp = $_FILES['file']['tmp_name'];
 
-        if (mysqli_query($koneksi, $query)) {
-            header("Location: view.php?id=" . $id);
-        } else {
-            echo "Error updating record: " . mysqli_error($koneksi);
-        }
+    if (!empty($file_temp)) {
+        move_uploaded_file($file_temp, "file/file_$id.pdf");
+        $query = "UPDATE surat SET nomorsurat='$nomorsurat', kategori='$kategori', judul='$judul', waktu='$waktu', file='$file' WHERE id='$id'";
+    } else {
+        $query = "UPDATE surat SET nomorsurat='$nomorsurat', kategori='$kategori', judul='$judul', waktu='$waktu' WHERE id='$id'";
     }
 
-    $id = mysqli_real_escape_string($koneksi, $_GET['id']);
-    $query = mysqli_query($koneksi, "SELECT * FROM surat WHERE id='$id'");
-    $data = mysqli_fetch_array($query);
+    if (mysqli_query($koneksi, $query)) {
+        header("Location: view.php?id=" . $id);
+    } else {
+        echo "Error updating record: " . mysqli_error($koneksi);
+    }
+}
+
+// Mengambil data surat berdasarkan ID
+$id = mysqli_real_escape_string($koneksi, $_GET['id']);
+$query = mysqli_query($koneksi, "SELECT * FROM surat WHERE id='$id'");
+$data = mysqli_fetch_array($query);
 ?>
 
 <div class="container-fluid">
@@ -42,7 +48,19 @@
         </div>
         <div class="form-group">
             <label for="kategori">Kategori:</label>
-            <input type="text" class="form-control" id="kategori" name="kategori" value="<?php echo $data['kategori']; ?>" required>
+            <select class="form-control" name="kategori" id="kategori" required>
+                <?php
+                if ($result->num_rows > 0) {
+                    // Output data dari setiap baris
+                    while ($row = $result->fetch_assoc()) {
+                        $selected = ($row["namaKategori"] == $data['kategori']) ? 'selected' : '';
+                        echo '<option value="' . $row["namaKategori"] . '" ' . $selected . '>' . $row["namaKategori"] . '</option>';
+                    }
+                } else {
+                    echo '<option value="">Tidak ada kategori</option>';
+                }
+                ?>
+            </select>
         </div>
         <div class="form-group">
             <label for="judul">Judul:</label>
@@ -50,7 +68,8 @@
         </div>
         <div class="form-group">
             <label for="waktu">Waktu Unggah:</label>
-            <input type="text" class="form-control" id="waktu" name="waktu" value="<?php echo $data['waktu']; ?>" required>
+            <input type="text" name="waktu_display" id="waktu_display" class="form-control" disabled value="<?php date_default_timezone_set('Asia/Jakarta'); echo date("Y-m-d H:i:s"); ?>">
+            <input type="hidden" name="waktu" value="<?php date_default_timezone_set('Asia/Jakarta'); echo date("Y-m-d H:i:s"); ?>">
         </div>
         <div class="form-group">
             <label for="file">File (PDF only):</label>
@@ -58,10 +77,10 @@
             <small class="form-text text-muted">Leave blank if you don't want to change the file.</small>
         </div>
         <button type="submit" name="update" class="btn btn-primary">Update</button>
-        <a href="view.php?id=<?php echo $data['id'];?>" class="btn btn-danger">Kembali</a>
+        <a href="view.php?id=<?php echo $data['id']; ?>" class="btn btn-danger">Kembali</a>
     </form>
 </div>
 
-<?php 
-    include 'layouts/footer.php';
+<?php
+include 'layouts/footer.php';
 ?>
