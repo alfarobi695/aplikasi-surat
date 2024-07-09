@@ -69,7 +69,7 @@ $result = $koneksi->query($sql);
                         <label>File surat</label>
                     </td>
                     <td width="85%">
-                        <input type="file" name="file" id="file">
+                        <input type="file" name="file" class="form-control" id="file">
                     </td>
                 </tr>
 

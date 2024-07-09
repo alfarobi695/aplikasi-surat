@@ -73,7 +73,7 @@ $data = mysqli_fetch_array($query);
         </div>
         <div class="form-group">
             <label for="file">File (PDF only):</label>
-            <input type="file" class="form-control-file" id="file" name="file">
+            <input type="file" class="form-control" id="file" name="file">
             <small class="form-text text-muted">Leave blank if you don't want to change the file.</small>
         </div>
         <button type="submit" name="update" class="btn btn-primary">Update</button>
